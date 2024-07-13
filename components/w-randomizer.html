@@ -1,0 +1,40 @@
+<div x-data="$el.host.data()">
+  <ul>
+    <template x-for="item in items">
+      <li x-text="item"></li>
+    </template>
+  </ul>
+  <button type="button" @click="randomize()">Randomize</button>
+</div>
+
+<script>
+  export default class extends AlpineComponent(HTMLElement) {
+    data() {
+      return {
+        items: [
+          'item 1',
+          'item 2',
+          'item 3',
+          'item 4',
+        ],
+
+        randomIter: function*() {
+          let itemsClone = [...this.items];
+          while (itemsClone.length) {
+            const randIdx = Math.floor(Math.random() * itemsClone.length);
+            yield itemsClone[randIdx];
+            itemsClone.splice(randIdx, 1)
+          }
+        },
+
+        randomize() {
+          this.items = [...this.randomIter()];
+        }
+      };
+    }
+  }
+</script>
+
+<style>
+  @import url('https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css');
+</style>

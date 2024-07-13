@@ -1,0 +1,44 @@
+<div x-data="$el.host.data()">
+  <button @click="increment()">
+    Count: <b x-text="count"></b>
+  </button>
+
+  <button @click="showCounter = true">
+    Show other counter
+  </button>
+
+  <h1>The count is now <span x-text="count"></span></h1>
+
+  <input type="text" x-model.number="count" />
+
+  <template x-if="showCounter">
+    <counter-test></counter-test>
+  </template>
+<div>
+
+<script>
+  export default class extends AlpineComponent(HTMLElement) {
+    components = ['counter-test']
+
+    data() {
+      return {
+
+        count: 0,
+        showCounter: false,
+
+        log() {
+          console.log(this.count);
+        },
+
+        increment() {
+          this.log();
+          this.count++;
+        }
+      }
+    }
+  }
+</script>
+
+<style>
+  @import url('https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css');
+</style>

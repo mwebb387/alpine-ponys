@@ -1,0 +1,126 @@
+<button onclick="host.increment()">
+  Count: <b data-bind-text="count"></b>
+</button>
+
+<script>
+  class Bindable {
+    textElements = []
+    valueElements = []
+
+    constructor(val) {
+      this._value = val;
+      this.type = typeof(val)
+    }
+
+    get value() {
+      return this._value;
+    }
+
+    set value(val) {
+      this.update(val)
+    }
+
+    convert(val) {
+      if (this.type === "boolean") {
+        return !!val;
+      } else if (this.type === "number") {
+        return Number(val);
+      } else if (this.type === "string") {
+        return val.toString()
+      }
+    }
+
+    update(val, silent = false) {
+      this._value = this.convert(val);
+      if (!silent) {
+        this.refresh();
+      }
+    }
+
+    bindText(el) {
+      this.textElements.push(el);
+    }
+
+    bindValue(el) {
+      this.valueElements.push(el);
+    }
+
+    refresh() {
+      this.textElements.forEach(el => el.innerText = this._value);
+      this.valueElements.forEach(el => el.value = this._value);
+    }
+
+    reset() {
+      this.textElements = []
+      this.valueElements = []
+    }
+  }
+
+  export default class extends HTMLElement {
+    bound = []
+
+    constructor() {
+      super();
+
+      this.count = this.bindable(0);
+    }
+
+    bind() {
+      this.$$('[data-bind-text]').forEach(el => {
+        let bindable = this[el.dataset.bindText];
+        if (bindable && bindable.bindText) {
+          bindable.bindText(el);
+          bindable.refresh()
+        }
+      })
+
+      this.$$('[data-bind-value]').forEach(el => {
+        let bindable = this[el.dataset.bindValue];
+        if (bindable && bindable.bindValue) {
+          bindable.bindValue(el);
+          bindable.refresh()
+        }
+      })
+
+      this.$$('[data-bind-model]').forEach(el => {
+        let bindable = this[el.dataset.bindModel];
+        if (bindable && bindable.bindValue) {
+          bindable.bindValue(el);
+          bindable.refresh()
+        
+          if (el instanceof HTMLInputElement) {
+            el.oninput = e => bindable.value = e.target.value;
+          }
+        }
+      })
+    }
+    
+    bindable(val) {
+      let bVal = new Bindable(val);
+      this.bound.push(bVal);
+
+      return bVal;
+    }
+
+    increment() {
+      this.count.value += 1;
+    }
+
+    connectedCallback() {
+      this.bind();
+    }
+
+    disconnectedCallback() {
+      this.bound.forEach(b => b.reset());
+      this.bound = [];
+    }
+  }
+</script>
+
+<style>
+  @import url('https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css');
+
+  button {
+    background: skyblue;
+  }
+</style>

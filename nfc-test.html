@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ponys Test</title>
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
+</head>
+<body>
+
+    <main class="container">
+        <p>This is the NFC test page...</p>
+        <button onclick="requestReader()">Request</button>
+    </main>
+    
+    <script>
+        async function requestReader() {
+            try {
+                const device = await navigator.usb.requestDevice({ filters: [{ vendorId: 0x072f, productId: 0x223B }] });
+
+                console.log(device.productName);      // "Arduino Micro"
+                console.log(device.manufacturerName); // "Arduino LLC"
+                console.log(device);
+
+                await device.open();
+
+                await device.selectConfiguration(1)
+                await device.claimInterface(1)
+
+                const result = await device.transferIn(3, 64)
+                console.log('Result: ', result);
+
+                await device.close();
+
+                // const port = await navigator.serial.requestPort({ filters: [] });
+
+                // console.log(port);
+            } catch(error) {
+                console.error(error);
+            };
+        }
+
+        function handleInputReport(e) {
+            console.log(e.device.productName + ": got input report " + e.reportId);
+            console.log(new Uint8Array(e.data.buffer));
+        }
+    </script>
+
+</body>
+</html>
